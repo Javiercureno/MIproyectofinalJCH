@@ -1,4 +1,4 @@
-# TODO App 📋
+# Mi proyecto Final es un TODO App "Mis Pendientes"📋
 
 TODO App es una aplicación de lista de tareas que permite a los usuarios agregar, marcar como completadas y eliminar tareas de manera intuitiva. La aplicación incluye una interfaz moderna y minimalista, compatible con modos oscuro y claro.
 
