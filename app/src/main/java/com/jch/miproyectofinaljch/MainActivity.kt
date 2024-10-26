@@ -110,8 +110,14 @@ fun TodoApp(
     val coroutineScope = rememberCoroutineScope()
     var lastDeletedTask by remember { mutableStateOf<TodoItem?>(null) }
 
+    // Validación de entrada
+    val isInputValid = todoText.isNotBlank() && !todoList.any { it.text.equals(todoText, ignoreCase = true) }
+    val borderColor by animateColorAsState(
+        if (isInputValid) MaterialTheme.colorScheme.primary else Color.Red
+    )
+
     fun addTodo() {
-        if (todoText.isNotBlank() && !todoList.any { it.text.equals(todoText, ignoreCase = true) }) {
+        if (isInputValid) {
             todoList = todoList + TodoItem(todoText)
             todoText = ""
         } else {
@@ -182,6 +188,7 @@ fun TodoApp(
                     )
                 }
 
+                // Campo de entrada con borde de color según validez
                 OutlinedTextField(
                     value = todoText,
                     onValueChange = { todoText = it },
@@ -194,6 +201,12 @@ fun TodoApp(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = borderColor,
+                        unfocusedIndicatorColor = borderColor
+                    ),
                     keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
                     keyboardActions = KeyboardActions(
                         onDone = { addTodo() }
@@ -337,3 +350,4 @@ fun TodoAppPreview() {
         TodoApp(isDarkMode = true, onToggleTheme = {})
     }
 }
+
