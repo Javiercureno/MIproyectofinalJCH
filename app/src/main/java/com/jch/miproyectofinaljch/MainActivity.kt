@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jch.miproyectofinaljch.ui.theme.MIproyectofinalJCHTheme
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -103,6 +104,9 @@ fun TodoApp(
     var todoText by remember { mutableStateOf("") }
     var todoList by remember { mutableStateOf(listOf<TodoItem>()) }
     var showCompletedOnly by remember { mutableStateOf(false) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var lastDeletedTask by remember { mutableStateOf<TodoItem?>(null) }
 
     // Función para agregar una tarea
     fun addTodo() {
@@ -112,140 +116,118 @@ fun TodoApp(
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+    // Función para manejar la eliminación de una tarea con opción de deshacer
+    fun deleteTaskWithUndo(task: TodoItem) {
+        todoList = todoList - task
+        lastDeletedTask = task
+        coroutineScope.launch {
+            val result = snackbarHostState.showSnackbar(
+                message = "Tarea eliminada",
+                actionLabel = "Deshacer"
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                lastDeletedTask?.let { todoList = todoList + it }
+                lastDeletedTask = null
+            }
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp)
         ) {
-            // Título de la aplicación
-            Text(
-                text = "Mis Pendientes",
-                style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)
-            )
-
-            // Imagen representativa de la aplicación de tareas
-            Image(
-                painter = painterResource(id = R.drawable.todo_image),
-                contentDescription = "Imagen de lista de tareas",
-                modifier = Modifier
-                    .size(80.dp)
-                    .padding(vertical = 8.dp)
-            )
-
-            // Switch para mostrar solo completadas
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Mostrar solo completadas", style = MaterialTheme.typography.bodyLarge)
-                CustomSwitch(
-                    checked = showCompletedOnly,
-                    onCheckedChange = { showCompletedOnly = it }
-                )
-            }
-
-            // Campo de entrada para la tarea
-            OutlinedTextField(
-                value = todoText,
-                onValueChange = { todoText = it },
-                label = { Text("Nueva tarea") },
-                trailingIcon = {
-                    IconButton(onClick = { addTodo() }) {
-                        Icon(Icons.Filled.Add, contentDescription = "Agregar tarea")
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(
-                    onDone = { addTodo() }
-                )
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Lista de tareas (aplica el filtro si showCompletedOnly está activado)
-            val filteredTodoList = if (showCompletedOnly) {
-                todoList.filter { it.isCompleted }
-            } else {
-                todoList
-            }
-
             Column(
+                modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.weight(1f, fill = false)
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                for ((index, task) in filteredTodoList.withIndex()) {
-                    TodoItemView(
-                        task = task,
-                        onComplete = { isCompleted ->
-                            todoList = todoList.toMutableList().also {
-                                it[index] = it[index].copy(isCompleted = isCompleted)
-                            }
-                        },
-                        onDelete = {
-                            todoList = todoList.toMutableList().also {
-                                it.removeAt(index)
-                            }
-                        }
+                // Título de la aplicación
+                Text(
+                    text = "Mis Pendientes",
+                    style = MaterialTheme.typography.headlineMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                )
+
+                // Imagen representativa de la aplicación de tareas
+                Image(
+                    painter = painterResource(id = R.drawable.todo_image),
+                    contentDescription = "Imagen de lista de tareas",
+                    modifier = Modifier
+                        .size(80.dp)
+                        .padding(vertical = 8.dp)
+                )
+
+                // Switch para mostrar solo completadas
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("Mostrar solo completadas", style = MaterialTheme.typography.bodyLarge)
+                    CustomSwitch(
+                        checked = showCompletedOnly,
+                        onCheckedChange = { showCompletedOnly = it }
                     )
+                }
+
+                // Campo de entrada para la tarea
+                OutlinedTextField(
+                    value = todoText,
+                    onValueChange = { todoText = it },
+                    label = { Text("Nueva tarea") },
+                    trailingIcon = {
+                        IconButton(onClick = { addTodo() }) {
+                            Icon(Icons.Filled.Add, contentDescription = "Agregar tarea")
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = { addTodo() }
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Lista de tareas
+                val filteredTodoList = if (showCompletedOnly) {
+                    todoList.filter { it.isCompleted }
+                } else {
+                    todoList
+                }
+
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    for (task in filteredTodoList) {
+                        TodoItemView(
+                            task = task,
+                            onComplete = { isCompleted ->
+                                todoList = todoList.toMutableList().also {
+                                    val index = it.indexOf(task)
+                                    it[index] = it[index].copy(isCompleted = isCompleted)
+                                }
+                            },
+                            onDelete = {
+                                deleteTaskWithUndo(task)
+                            }
+                        )
+                    }
                 }
             }
         }
-
-        // Switch para cambiar entre Dark Mode y Light Mode en la parte inferior
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text("Modo Oscuro", style = MaterialTheme.typography.bodyLarge)
-            CustomSwitch(
-                checked = isDarkMode,
-                onCheckedChange = { onToggleTheme() }
-            )
-        }
     }
-}
-
-@Composable
-fun CustomSwitch(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    val trackColor by animateColorAsState(
-        targetValue = if (checked) MaterialTheme.colorScheme.primary else Color.Gray
-    )
-    val thumbColor by animateColorAsState(
-        targetValue = if (checked) MaterialTheme.colorScheme.onPrimary else Color.LightGray
-    )
-
-    Switch(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        colors = SwitchDefaults.colors(
-            checkedTrackColor = trackColor,
-            uncheckedTrackColor = trackColor,
-            checkedThumbColor = thumbColor,
-            uncheckedThumbColor = thumbColor
-        ),
-        modifier = Modifier
-            .size(50.dp, 25.dp)
-            .padding(4.dp)
-    )
 }
 
 @Composable
@@ -300,6 +282,33 @@ fun TodoItemView(
             }
         }
     }
+}
+
+@Composable
+fun CustomSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val trackColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.primary else Color.Gray
+    )
+    val thumbColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.onPrimary else Color.LightGray
+    )
+
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        colors = SwitchDefaults.colors(
+            checkedTrackColor = trackColor,
+            uncheckedTrackColor = trackColor,
+            checkedThumbColor = thumbColor,
+            uncheckedThumbColor = thumbColor
+        ),
+        modifier = Modifier
+            .size(50.dp, 25.dp)
+            .padding(4.dp)
+    )
 }
 
 @Preview(showBackground = true)
