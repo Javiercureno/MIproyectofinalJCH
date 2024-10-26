@@ -108,11 +108,18 @@ fun TodoApp(
     val coroutineScope = rememberCoroutineScope()
     var lastDeletedTask by remember { mutableStateOf<TodoItem?>(null) }
 
-    // Función para agregar una tarea
+    // Función para agregar una tarea con validación
     fun addTodo() {
-        if (todoText.isNotBlank()) {
+        if (todoText.isNotBlank() && !todoList.any { it.text.equals(todoText, ignoreCase = true) }) {
             todoList = todoList + TodoItem(todoText)
             todoText = ""
+        } else {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = if (todoText.isBlank()) "La tarea no puede estar vacía"
+                    else "La tarea ya existe"
+                )
+            }
         }
     }
 
