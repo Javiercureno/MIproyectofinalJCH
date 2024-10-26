@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Icono moderno para una aplicación de pendientes
+-->
+<vector android:height="200dp" android:viewportHeight="200"
+    android:viewportWidth="200" android:width="200dp" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo con bordes redondeados y color moderno -->
+    <path android:fillColor="#E0F7FA" android:pathData="M10,10h180a10,10 0 0 1 10,10v160a10,10 0 0 1 -10,10h-180a10,10 0 0 1 -10,-10v-160a10,10 0 0 1 10,-10z"/>
+
+    <!-- Barra de título en la parte superior con bordes redondeados y color suave -->
+    <path android:fillColor="#00796B" android:pathData="M15,20h170a8,8 0 0 1 8,8v10a8,8 0 0 1 -8,8h-170a8,8 0 0 1 -8,-8v-10a8,8 0 0 1 8,-8z"/>
+
+    <!-- Primera casilla de verificación y texto -->
+    <path android:fillColor="#B2DFDB" android:pathData="M20,60a6,6 0 0 1 6,-6h18a6,6 0 0 1 6,6v18a6,6 0 0 1 -6,6h-18a6,6 0 0 1 -6,-6v-18z"/>
+    <path android:fillColor="#00796B" android:pathData="M28,72l8,8 16,-16" android:strokeWidth="3" android:strokeColor="#00796B"/>
+    <path android:fillColor="#004D40" android:pathData="M50,65h130v8h-130z"/>
+
+    <!-- Segunda casilla de verificación y texto -->
+    <path android:fillColor="#B2DFDB" android:pathData="M20,100a6,6 0 0 1 6,-6h18a6,6 0 0 1 6,6v18a6,6 0 0 1 -6,6h-18a6,6 0 0 1 -6,-6v-18z"/>
+    <path android:fillColor="#00796B" android:pathData="M28,112l8,8 16,-16" android:strokeWidth="3" android:strokeColor="#00796B"/>
+    <path android:fillColor="#004D40" android:pathData="M50,105h130v8h-130z"/>
+
+    <!-- Tercera casilla de verificación y texto -->
+    <path android:fillColor="#B2DFDB" android:pathData="M20,140a6,6 0 0 1 6,-6h18a6,6 0 0 1 6,6v18a6,6 0 0 1 -6,6h-18a6,6 0 0 1 -6,-6v-18z"/>
+    <path android:fillColor="#00796B" android:pathData="M28,152l8,8 16,-16" android:strokeWidth="3" android:strokeColor="#00796B"/>
+    <path android:fillColor="#004D40" android:pathData="M50,145h130v8h-130z"/>
+</vector>
+
+
