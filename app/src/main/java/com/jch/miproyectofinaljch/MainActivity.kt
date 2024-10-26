@@ -226,8 +226,50 @@ fun TodoApp(
                     }
                 }
             }
+
+            // Switch para cambiar entre Dark Mode y Light Mode en la parte inferior
+            Row(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text("Modo Oscuro", style = MaterialTheme.typography.bodyLarge)
+                CustomSwitch(
+                    checked = isDarkMode,
+                    onCheckedChange = { onToggleTheme() }
+                )
+            }
         }
     }
+}
+
+@Composable
+fun CustomSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val trackColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.primary else Color.Gray
+    )
+    val thumbColor by animateColorAsState(
+        targetValue = if (checked) MaterialTheme.colorScheme.onPrimary else Color.LightGray
+    )
+
+    Switch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        colors = SwitchDefaults.colors(
+            checkedTrackColor = trackColor,
+            uncheckedTrackColor = trackColor,
+            checkedThumbColor = thumbColor,
+            uncheckedThumbColor = thumbColor
+        ),
+        modifier = Modifier
+            .size(50.dp, 25.dp)
+            .padding(4.dp)
+    )
 }
 
 @Composable
@@ -282,33 +324,6 @@ fun TodoItemView(
             }
         }
     }
-}
-
-@Composable
-fun CustomSwitch(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    val trackColor by animateColorAsState(
-        targetValue = if (checked) MaterialTheme.colorScheme.primary else Color.Gray
-    )
-    val thumbColor by animateColorAsState(
-        targetValue = if (checked) MaterialTheme.colorScheme.onPrimary else Color.LightGray
-    )
-
-    Switch(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        colors = SwitchDefaults.colors(
-            checkedTrackColor = trackColor,
-            uncheckedTrackColor = trackColor,
-            checkedThumbColor = thumbColor,
-            uncheckedThumbColor = thumbColor
-        ),
-        modifier = Modifier
-            .size(50.dp, 25.dp)
-            .padding(4.dp)
-    )
 }
 
 @Preview(showBackground = true)
