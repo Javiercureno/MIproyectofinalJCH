@@ -3,10 +3,13 @@ package com.jch.miproyectofinaljch
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,7 +57,7 @@ fun MainContent(isDarkMode: Boolean, onToggleTheme: () -> Unit) {
     var showSplash by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
-        delay(2000) // Muestra la pantalla de inicio por 2 segundos
+        delay(2000)
         showSplash = false
     }
 
@@ -69,7 +72,6 @@ fun MainContent(isDarkMode: Boolean, onToggleTheme: () -> Unit) {
 fun SplashScreen() {
     val scale = remember { Animatable(0.8f) }
 
-    // Animación de escalado
     LaunchedEffect(Unit) {
         scale.animateTo(
             targetValue = 1f,
@@ -108,7 +110,6 @@ fun TodoApp(
     val coroutineScope = rememberCoroutineScope()
     var lastDeletedTask by remember { mutableStateOf<TodoItem?>(null) }
 
-    // Función para agregar una tarea con validación
     fun addTodo() {
         if (todoText.isNotBlank() && !todoList.any { it.text.equals(todoText, ignoreCase = true) }) {
             todoList = todoList + TodoItem(todoText)
@@ -123,7 +124,6 @@ fun TodoApp(
         }
     }
 
-    // Función para manejar la eliminación de una tarea con opción de deshacer
     fun deleteTaskWithUndo(task: TodoItem) {
         todoList = todoList - task
         lastDeletedTask = task
@@ -153,7 +153,6 @@ fun TodoApp(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Título de la aplicación
                 Text(
                     text = "Mis Pendientes",
                     style = MaterialTheme.typography.headlineMedium,
@@ -163,7 +162,6 @@ fun TodoApp(
                         .padding(vertical = 8.dp)
                 )
 
-                // Imagen representativa de la aplicación de tareas
                 Image(
                     painter = painterResource(id = R.drawable.todo_image),
                     contentDescription = "Imagen de lista de tareas",
@@ -172,7 +170,6 @@ fun TodoApp(
                         .padding(vertical = 8.dp)
                 )
 
-                // Switch para mostrar solo completadas
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -185,7 +182,6 @@ fun TodoApp(
                     )
                 }
 
-                // Campo de entrada para la tarea
                 OutlinedTextField(
                     value = todoText,
                     onValueChange = { todoText = it },
@@ -206,7 +202,6 @@ fun TodoApp(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Lista de tareas
                 val filteredTodoList = if (showCompletedOnly) {
                     todoList.filter { it.isCompleted }
                 } else {
@@ -218,23 +213,28 @@ fun TodoApp(
                     modifier = Modifier.weight(1f, fill = false)
                 ) {
                     for (task in filteredTodoList) {
-                        TodoItemView(
-                            task = task,
-                            onComplete = { isCompleted ->
-                                todoList = todoList.toMutableList().also {
-                                    val index = it.indexOf(task)
-                                    it[index] = it[index].copy(isCompleted = isCompleted)
+                        AnimatedVisibility(
+                            visible = task in todoList,
+                            enter = fadeIn(tween(500)),
+                            exit = fadeOut(tween(500))
+                        ) {
+                            TodoItemView(
+                                task = task,
+                                onComplete = { isCompleted ->
+                                    todoList = todoList.toMutableList().also {
+                                        val index = it.indexOf(task)
+                                        it[index] = it[index].copy(isCompleted = isCompleted)
+                                    }
+                                },
+                                onDelete = {
+                                    deleteTaskWithUndo(task)
                                 }
-                            },
-                            onDelete = {
-                                deleteTaskWithUndo(task)
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
 
-            // Switch para cambiar entre Dark Mode y Light Mode en la parte inferior
             Row(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -302,14 +302,12 @@ fun TodoItemView(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Checkbox para completar la tarea
             Checkbox(
                 checked = task.isCompleted,
                 onCheckedChange = { isChecked -> onComplete(isChecked) },
                 modifier = Modifier.padding(end = 8.dp)
             )
 
-            // Texto de la tarea
             Text(
                 text = task.text,
                 color = completeColor,
@@ -318,7 +316,6 @@ fun TodoItemView(
                 modifier = Modifier.weight(1f)
             )
 
-            // Botón para eliminar la tarea
             IconButton(
                 onClick = onDelete,
                 modifier = Modifier.size(32.dp)
